@@ -109,13 +109,13 @@ main:
 # make space on the stack
 mov sp ax
 addi 0x1 sp
-# put 6 on bx and call factorial
+# put 4 on bx and call factorial
 movi 0x4 bx
 call factorial
 # make more space on the stack
 mov sp ax
 addi 0x1 sp
-# put 6 on bx and call factorial_recursive
+# put 5 on bx and call factorial_recursive
 movi 0x5 bx
 call factorial_recursive
 # make more space on the stack
