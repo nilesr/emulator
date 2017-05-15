@@ -1,0 +1,142 @@
+jmp main
+
+# takes ax: address to store result in
+# takes bx: first number to multiply
+# takes cx: second number to multiply
+# preserves only ax and bx
+multiply:
+movi 0x0 dx
+multiply_loop:
+testi 0x0 cx
+je multiply_done
+add bx dx
+subi 0x1 cx
+jmp multiply_loop
+multiply_done:
+sea ax dx
+ret
+
+# takes ax: address to store result in
+# takes bx: number to calculate the factorial of
+# preserves ax, dx (doesn't use it)
+factorial:
+push ax
+movi 0x1 cx
+factorial_loop:
+testi 0x1 bx
+je factorial_done
+mov sp ax
+addi 0x1 sp
+call multiply
+pop cx
+subi 0x1 bx
+jmp factorial_loop
+factorial_done:
+pop ax
+sea ax cx
+ret
+
+# takes ax: address to store result in
+# takes bx: number to calculate the factorial of
+# preserves ax, dx (doesn't use it)
+factorial_recursive:
+push ax
+movi 0x1 cx
+testi 0x1 bx
+je fac_rec_end
+push bx
+mov sp ax
+addi 0x1 sp
+subi 0x1 bx
+call factorial_recursive
+pop cx
+pop bx
+# bx = n
+# cx = f(n-1)
+mov sp ax
+addi 0x1 sp
+call multiply
+pop cx
+# cx = n*f(n-1)
+fac_rec_end:
+pop ax
+sea ax cx
+ret
+
+# ax -> pointer to steps accumulator, expects that *ax is initialized to zero
+# bx -> input number
+hailstone:
+testi 0x1 bx
+jne hailstone_cont
+ret
+hailstone_cont:
+mov bx cx
+andi 0x1 cx
+testi 0x0 cx
+je hailstone_even
+# was odd
+muli 0x3 bx
+addi 0x1 bx
+jmp hailstone_handled
+hailstone_even:
+# was even
+divi 0x2 bx
+hailstone_handled:
+# add 1 to the step counter
+lea ax cx
+addi 0x1 cx
+sea ax cx
+#call hailstone
+#ret
+# tail call recursion bitch
+jmp hailstone
+
+# ax -> pointer to where to store the result
+# bx -> input number
+# cx -> accumulator, expected to be set to 1 on the first call
+factorial_tcr:
+testi 0x1 bx
+jne factorial_tcr_cont
+sea ax cx
+ret
+factorial_tcr_cont:
+mul bx cx
+subi 0x1 bx
+# tail call recursion
+jmp factorial_tcr
+
+main:
+# make space on the stack
+mov sp ax
+addi 0x1 sp
+# put 6 on bx and call factorial
+movi 0x4 bx
+call factorial
+# make more space on the stack
+mov sp ax
+addi 0x1 sp
+# put 6 on bx and call factorial_recursive
+movi 0x5 bx
+call factorial_recursive
+# make more space on the stack
+mov sp ax
+addi 0x1 sp
+# put 6 on bx and 1 on cx and call factorial_tcr
+movi 0x6 bx
+movi 0x1 cx
+call factorial_tcr
+# make even more space on the stack
+mov sp ax
+# the steps counter expects to be started at zero
+pushi 0x0
+# 73 decimal
+movi 0x49 bx
+call hailstone
+# take the number of steps to hailstone 73 (should be 115) and puts it on ax
+# takes 6! (calculated using tail call recursion) and puts it on bx (should be 720)
+# takes 5! calculated using regular recursion and puts it on cx (should be 120)
+# takes 4! calculated iteratively and puts it on dx (should be 24)
+pop ax
+pop bx
+pop cx
+pop dx
