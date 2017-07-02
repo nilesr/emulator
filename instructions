@@ -75,12 +75,24 @@ andi 0x1 cx
 testi 0x0 cx
 je hailstone_even
 # was odd
-muli 0x3 bx
+# preserve ax, cx
+push ax
+push cx
+# put result pointer in ax
+mov sp ax
+pushi 0x0
+movi 0x3 cx
+call multiply
+# pop result
+pop bx
+# finish preserve ax, cx
+pop cx
+pop ax
 addi 0x1 bx
 jmp hailstone_handled
 hailstone_even:
 # was even
-divi 0x2 bx
+rsi 0x1 bx # right shift by one bit, really divide by two
 hailstone_handled:
 # add 1 to the step counter
 lea ax cx
@@ -100,7 +112,18 @@ jne factorial_tcr_cont
 sea ax cx
 ret
 factorial_tcr_cont:
-mul bx cx
+# multiply bx and cx, store result in cx
+# first preserve ax, bx
+push ax
+push bx
+mov sp ax
+pushi 0x0
+call multiply
+# pop result
+pop cx
+# finish preserve
+pop bx
+pop ax
 subi 0x1 bx
 # tail call recursion
 jmp factorial_tcr

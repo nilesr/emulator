@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 asm = open("instructions", "r").read().split("\n")
-asm = [[int(part, 16) if part[:2] == "0x" else part for part in instruction.split()] for instruction in asm if len(instruction) > 0 and instruction[0] != "#"]
+asm = [[int(part, 16) if part[:2] == "0x" else part for part in instruction.split("#")[0].strip().split()] for instruction in asm if len(instruction) > 0]
 rs = dict([[item, 0] for item in ["ax", "bx", "cx", "dx", "ip", "sp", "sb", "fl"]])
 ram = [0 for i in range(1024)]
 
 def debug(): 
     # prints the registers and the first 10 values in ram
-    print(rs, end=" ");
-    print(str(ram[:10])[:-1] + ", ...]")
+    print("Registers: " + str(rs));
+    i = len(ram) - 1
+    while ram[i] == 0: i -= 1
+    print("Ram: " + str(ram[:i+1])[:-1] + ", ...]")
 def handle_three(i):
     instruction = i[0]
     first = i[1]
@@ -16,14 +18,10 @@ def handle_three(i):
     if instruction == "addi": rs[second] += first
     if instruction == "sub": rs[second] -= rs[first]
     if instruction == "subi": rs[second] -= first
-    if instruction == "mul": rs[second] *= rs[first]
-    if instruction == "muli": rs[second] *= first
-    if instruction == "div":
-        rs[second] /= rs[first]
-        rs[second] = int(rs[second])
-    if instruction == "divi":
-        rs[second] /= first
-        rs[second] = int(rs[second])
+    if instruction == "ls": rs[second] <<= rs[first]
+    if instruction == "lsi": rs[second] <<= first
+    if instruction == "rs": rs[second] >>= rs[first]
+    if instruction == "rsi": rs[second] >>= first
     if instruction == "xor": rs[second] ^= rs[first]
     if instruction == "xori": rs[second] ^= first
     if instruction == "and": rs[second] &= rs[first]
@@ -49,9 +47,9 @@ def handle_two(i):
         handle_two(["pushi", rs["ip"]])
         instruction = "jmp"
     if instruction == "je":
-        if rs["fl"] & 1 > 0: instruction = "jmp"
+        if rs["fl"] & 0b001 > 0: instruction = "jmp"
     if instruction == "jne":
-        if rs["fl"] & 1 == 0: instruction = "jmp"
+        if rs["fl"] & 0b001 == 0: instruction = "jmp"
     if instruction == "jl":
         if rs["fl"] & 0b100 > 0: instruction = "jmp"
     if instruction == "jle":
