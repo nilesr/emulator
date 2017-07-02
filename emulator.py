@@ -76,8 +76,8 @@ while True:
         break;
     instruction = asm[rs["ip"]]
     if len(instruction) == 3: handle_three(instruction)
-    if len(instruction) == 2: handle_two(instruction)
-    if len(instruction) == 1:
+    elif len(instruction) == 2: handle_two(instruction)
+    elif len(instruction) == 1:
         instruction = instruction[0]
         if instruction == "debug":
             debug()
@@ -87,5 +87,7 @@ while True:
         if instruction == "ret":
             rs["sp"] -= 1
             rs["ip"] = ram[rs["sp"]]
+    elif len(instruction) != 0:
+        print("Found suspiciously long instruction \"" + " ".join(instruction) + "\"")
     rs["ip"] += 1
 debug()
