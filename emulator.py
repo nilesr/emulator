@@ -90,4 +90,6 @@ while True:
     elif len(instruction) != 0:
         print("Found suspiciously long instruction \"" + " ".join(instruction) + "\"")
     rs["ip"] += 1
+if rs["sp"] != 0:
+    print("WARNING - Stack was not empty at program exit")
 debug()
